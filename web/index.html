@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Speak</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a1420" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1><span>Speak</span> · English practice</h1>
+    <button class="icon-btn" id="openSettings" aria-label="Settings">⚙️</button>
+  </header>
+
+  <main>
+    <div id="transcript"></div>
+
+    <div class="controls">
+      <button id="talkBtn">Toca para empezar</button>
+      <div id="status"></div>
+      <button id="endBtn" hidden>Terminar conversación</button>
+    </div>
+  </main>
+
+  <p id="disclaimer">No mires ni toques el teléfono mientras conduces. Configura todo y pulsa "empezar" antes de arrancar — luego la conversación sigue sola por voz.</p>
+
+  <div id="settings" hidden>
+    <div id="settingsPanel">
+      <h2>Ajustes</h2>
+
+      <div class="field">
+        <label for="serverUrl">URL del servidor</label>
+        <input type="text" id="serverUrl" placeholder="https://tu-servidor.example.com" />
+      </div>
+
+      <div class="field">
+        <label for="appSecret">Clave de acceso (X-App-Secret)</label>
+        <input type="password" id="appSecret" placeholder="La misma que APP_SHARED_SECRET" />
+      </div>
+
+      <div class="field">
+        <label for="level">Nivel</label>
+        <select id="level">
+          <option value="beginner">Principiante</option>
+          <option value="intermediate" selected>Intermedio</option>
+          <option value="advanced">Avanzado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="topic">Tema (opcional)</label>
+        <input type="text" id="topic" placeholder="p. ej. reuniones de trabajo, viajes..." />
+        <div class="chips">
+          <button type="button" class="chip" data-topic="daily life and routines">Vida diaria</button>
+          <button type="button" class="chip" data-topic="work and business meetings">Trabajo</button>
+          <button type="button" class="chip" data-topic="travel and vacations">Viajes</button>
+          <button type="button" class="chip" data-topic="news and current events">Actualidad</button>
+          <button type="button" class="chip" data-topic="">Sin tema fijo</button>
+        </div>
+      </div>
+
+      <div class="field switch-row">
+        <label for="corrections" style="margin-bottom:0">Corregir errores al hablar</label>
+        <input type="checkbox" id="corrections" checked />
+      </div>
+
+      <button class="primary-btn" id="saveSettings">Guardar</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
