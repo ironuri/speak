@@ -25,9 +25,28 @@ const fields = {
 const suggestionsEl = document.getElementById("topicSuggestions");
 
 let settings = loadSettings();
+applyMagicLink();
 let selectedStory = settings.topicBriefing || null;
 let activeCategoryId = null;
 applySettingsToForm();
+
+// One-time setup via a private link (never commit real values to this file —
+// this repo/site is public). Open once on the phone:
+//   https://.../web/#server=<url>&secret=<secret>
+// It saves both to localStorage, then strips them from the visible URL/history.
+function applyMagicLink() {
+  if (!location.hash) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  const server = params.get("server");
+  const secret = params.get("secret");
+  if (!server && !secret) return;
+
+  if (server) settings.serverUrl = server.replace(/\/+$/, "");
+  if (secret) settings.appSecret = secret;
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+  window.history.replaceState(null, "", location.pathname + location.search);
+}
 
 let history = [];
 let isConversationActive = false;
