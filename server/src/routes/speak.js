@@ -1,5 +1,5 @@
 import { Router, json } from "express";
-import { synthesizeSpeech } from "../lib/elevenlabs.js";
+import { synthesizeSpeech } from "../lib/googletts.js";
 
 const router = Router();
 

@@ -13,7 +13,7 @@ iPhone (Safari / PWA)                 Tu servidor                Proveedores
 ┌─────────────────────┐   audio   ┌───────────────┐   texto   ┌─────────────┐
 │ graba tu voz (mic)   │ ───────▶ │ /api/transcribe│ ───────▶ │ OpenAI Whisper│
 │ reproduce la respuesta│         │ /api/chat       │ ───────▶ │ Claude (Anthropic)│
-│ en el altavoz del coche│        │ /api/speak      │ ───────▶ │ ElevenLabs TTS│
+│ en el altavoz del coche│        │ /api/speak      │ ───────▶ │ Google Cloud TTS│
 └─────────────────────┘  ◀─────── └───────────────┘  ◀─────── └─────────────┘
 ```
 
@@ -36,16 +36,20 @@ El servidor (`/server`) es una API Node/Express muy pequeña. Necesitas:
 - Una cuenta en [platform.openai.com](https://platform.openai.com) →
   `OPENAI_API_KEY` (se usa solo para transcribir tu voz; Whisper es el mejor
   precio/calidad para eso y el acento no importa aquí, es tu propia voz)
-- Una cuenta en [elevenlabs.io](https://elevenlabs.io) → `ELEVENLABS_API_KEY`
-  (se usa para la voz del agente — OpenAI TTS no permite elegir acento, así
-  que para tener un acento británico real hace falta ElevenLabs)
+- Una cuenta en [console.cloud.google.com](https://console.cloud.google.com)
+  con la API de **Cloud Text-to-Speech** habilitada → `GOOGLE_TTS_API_KEY`
+  (se usa para la voz del agente — OpenAI TTS no permite elegir acento; Google
+  Cloud sí, y es pago por uso puro, sin suscripción, como Anthropic/OpenAI)
 
-**Elegir la voz británica:** en elevenlabs.io ve a **Voice Library**, filtra
-por acento **British**, escucha algunas y quédate con la que más te guste.
-Copia su **Voice ID** (lo ves en los detalles de la voz) en
-`ELEVENLABS_VOICE_ID`. Los IDs son propios de cada cuenta y la librería
-cambia con el tiempo, así que confirma siempre ahí en lugar de reutilizar un
-ID de otra fuente.
+La voz por defecto (`en-GB-Neural2-B`) ya es un acento británico. Puedes
+cambiarla por otra de la [lista de voces en-GB](https://cloud.google.com/text-to-speech/docs/voices)
+editando `GOOGLE_TTS_VOICE` en `.env`.
+
+> **¿Y ElevenLabs?** Suena más natural que las voces de Google, pero exige
+> un plan mensual mínimo en vez de pago puro por uso. El código para usarlo
+> ya existe en `server/src/lib/elevenlabs.js` — si más adelante quieres
+> probarlo, solo hay que cambiar el `import` en `server/src/routes/speak.js`
+> y rellenar `ELEVENLABS_*` en `.env` (ver comentarios en `.env.example`).
 
 ```bash
 cd server
@@ -115,20 +119,21 @@ ahí directamente.
 ## Coste aproximado
 
 Con uso diario de ~2h (~100 turnos/hora), con la configuración por defecto
-(Claude Haiku 4.5 + Whisper + ElevenLabs Flash):
+(Claude Haiku 4.5 + Whisper + Google Cloud TTS):
 
 | Servicio | Coste/hora aprox. |
 |---|---|
 | Claude (conversación) | ~$0.11 |
 | Whisper (transcribir tu voz) | ~$0.08 |
-| ElevenLabs (voz británica del agente) | ~$1.00 |
-| **Total** | **~$1.20/hora** (~$2.40/día, ~$35-70/mes según uso) |
+| Google Cloud TTS (voz británica del agente) | ~$0.32 |
+| **Total** | **~$0.51/hora** (~$1/día, ~$15-30/mes según uso) |
 
-ElevenLabs es más caro que la voz genérica de OpenAI (es lo que hace falta
-para tener un acento británico real, que OpenAI no ofrece) — es, con
-diferencia, el componente que más pesa en la factura. Estimado orientativo:
-revisa precios actuales en cada proveedor antes de confiar en la cifra, y
-ten en cuenta que escala con cuánto habléis tú y el agente en cada turno.
+Todos los servicios son pago por uso puro, sin suscripción — pagas
+literalmente por lo que hables. Estimado orientativo: revisa precios
+actuales en cada proveedor antes de confiar en la cifra, y ten en cuenta
+que escala con cuánto habléis tú y el agente en cada turno. Si más
+adelante cambias a ElevenLabs por la voz, este coste sube (ver nota más
+arriba) y además pasa a tener una cuota mensual mínima.
 
 ## Roadmap hacia CarPlay nativo (fase 2)
 
