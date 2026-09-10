@@ -22,9 +22,11 @@ const fields = {
   topic: document.getElementById("topic"),
   corrections: document.getElementById("corrections"),
 };
+const suggestionsEl = document.getElementById("topicSuggestions");
 
 let settings = loadSettings();
-let selectedTopicId = settings.topicId || null;
+let selectedStory = settings.topicBriefing || null;
+let activeCategoryId = null;
 applySettingsToForm();
 
 let history = [];
@@ -44,9 +46,9 @@ function loadSettings() {
   return {
     serverUrl: "",
     appSecret: "",
-    level: "intermediate",
+    level: "B2",
     topic: "",
-    topicId: null,
+    topicBriefing: null,
     correctionsEnabled: true,
   };
 }
@@ -57,7 +59,7 @@ function saveSettings() {
     appSecret: fields.appSecret.value,
     level: fields.level.value,
     topic: fields.topic.value.trim(),
-    topicId: selectedTopicId,
+    topicBriefing: selectedStory,
     correctionsEnabled: fields.corrections.checked,
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -66,7 +68,7 @@ function saveSettings() {
 function applySettingsToForm() {
   fields.serverUrl.value = settings.serverUrl || "";
   fields.appSecret.value = settings.appSecret || "";
-  fields.level.value = settings.level || "intermediate";
+  fields.level.value = settings.level || "B2";
   fields.topic.value = settings.topic || "";
   fields.corrections.checked = settings.correctionsEnabled !== false;
 }
@@ -83,24 +85,88 @@ saveSettingsBtn.addEventListener("click", () => {
 const chips = Array.from(document.querySelectorAll(".chip"));
 
 function refreshChipHighlight() {
+  const hasCustomText = !activeCategoryId && fields.topic.value.trim().length > 0;
   chips.forEach((chip) => {
     const id = chip.dataset.id || null;
-    chip.classList.toggle("active", id === selectedTopicId);
+    const isActive = id === null ? !activeCategoryId && !hasCustomText : id === activeCategoryId;
+    chip.classList.toggle("active", isActive);
   });
+}
+
+function clearTopicSelection() {
+  selectedStory = null;
+  activeCategoryId = null;
+  suggestionsEl.innerHTML = "";
+  refreshChipHighlight();
+}
+
+function renderSuggestionsStatus(text) {
+  suggestionsEl.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "suggestions-status";
+  p.textContent = text;
+  suggestionsEl.appendChild(p);
+}
+
+function renderSuggestions(items) {
+  suggestionsEl.innerHTML = "";
+  items.forEach((item) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "suggestion-card";
+
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const summary = document.createElement("p");
+    summary.textContent = item.summary;
+    card.appendChild(title);
+    card.appendChild(summary);
+
+    card.addEventListener("click", () => {
+      selectedStory = item;
+      fields.topic.value = item.title;
+      Array.from(suggestionsEl.children).forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+    });
+
+    suggestionsEl.appendChild(card);
+  });
+}
+
+async function fetchSuggestions(categoryId) {
+  renderSuggestionsStatus("Buscando temas de actualidad...");
+  try {
+    const res = await fetch(apiUrl(`/api/topic-suggestions/${categoryId}`), {
+      headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) throw new Error("sin resultados");
+    renderSuggestions(data.items);
+  } catch (err) {
+    renderSuggestionsStatus(
+      `No se pudieron buscar temas de actualidad (${err.message}). Escribe un tema a mano abajo.`
+    );
+  }
 }
 
 chips.forEach((chip) => {
   chip.addEventListener("click", () => {
     const id = chip.dataset.id || "";
-    selectedTopicId = id || null;
-    fields.topic.value = id ? chip.textContent : "";
+    if (!id) {
+      clearTopicSelection();
+      fields.topic.value = "";
+      return;
+    }
+    activeCategoryId = id;
+    selectedStory = null;
     refreshChipHighlight();
+    fetchSuggestions(id);
   });
 });
 
 fields.topic.addEventListener("input", () => {
-  selectedTopicId = null;
-  refreshChipHighlight();
+  clearTopicSelection();
 });
 
 refreshChipHighlight();
@@ -162,8 +228,8 @@ async function chat(nextHistory) {
     body: JSON.stringify({
       history: nextHistory,
       level: settings.level,
-      topicId: settings.topicId,
       topic: settings.topic,
+      topicBriefing: settings.topicBriefing,
       correctionsEnabled: settings.correctionsEnabled,
     }),
   });

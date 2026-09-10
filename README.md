@@ -92,29 +92,32 @@ llamada.
 
 ## Ajustes de la conversación
 
-Desde el mismo panel ⚙️: nivel (principiante/intermedio/avanzado), tema, y
-si quieres que te corrija errores de gramática/vocabulario sobre la marcha
-o no.
+Desde el mismo panel ⚙️: nivel (escala CEFR oficial A1-C2, por defecto B2),
+tema, y si quieres que te corrija errores de gramática/vocabulario sobre la
+marcha o no.
 
-**Temas.** Hay 8 temas ya preparados (Deportes, Política, Finanzas,
-Cultura, Tecnología, Medio ambiente, Viajes, Trabajo), inspirados en el
-formato "agree or disagree" que usan academias y editoriales de inglés
-(British Council LearnEnglish, exámenes de Cambridge, libros de texto tipo
-Speakout/English File) para practicar conversación en B1-B2: en vez de
-preguntas abiertas neutras, cada tema tiene una serie de afirmaciones
-debatibles ("los deportistas profesionales cobran demasiado", "el trabajo
-en remoto perjudica a la economía a largo plazo"...) que el agente usa para
-arrancar o reconducir la charla. También puedes escribir un tema libre en
-el campo de texto.
+**Temas de actualidad, en vivo.** Al elegir una categoría (Deportes,
+Política, Finanzas, Cultura, Tecnología, Medio ambiente, Viajes, Trabajo),
+la app le pide a Claude que busque en internet (con su herramienta de
+búsqueda web integrada) 2-3 noticias reales y debatibles de ese momento —
+por ejemplo, dentro de Política podría proponerte "el posicionamiento de
+Trump en el estrecho de Ormuz" si es lo que está pasando ese día — y te
+las presenta como tarjetas para elegir. Al elegir una, el agente recibe un
+resumen factual (hechos + posturas enfrentadas) para poder debatir sobre
+ese tema concreto con conocimiento real, no con generalidades. Si la
+búsqueda falla (sin conexión, sin crédito, etc.), la app cae de vuelta a un
+banco de temas genéricos guardado en `server/src/lib/topics.js`, inspirado
+en el formato "agree or disagree" que usan academias como el British
+Council o exámenes de Cambridge. También puedes escribir un tema libre en
+el campo de texto en cualquier momento.
 
 **El agente opina de verdad.** No está diseñado para darte siempre la
 razón: toma una postura clara al principio de la conversación y la
 mantiene, te rebate cuando no está de acuerdo, matiza cuando sí lo está, y
 te pregunta por qué opinas lo que opinas — es un intercambio de opiniones,
 no una validación constante. Esto está definido en
-`server/src/lib/prompts.js` (bloque `OPINION_GUIDANCE`) y el banco de temas
-en `server/src/lib/topics.js`, así que puedes editar o añadir temas propios
-ahí directamente.
+`server/src/lib/prompts.js` (bloque `OPINION_GUIDANCE`), y la búsqueda de
+temas de actualidad en `server/src/lib/newsTopics.js`.
 
 ## Coste aproximado
 
@@ -127,6 +130,12 @@ Con uso diario de ~2h (~100 turnos/hora), con la configuración por defecto
 | Whisper (transcribir tu voz) | ~$0.08 |
 | Google Cloud TTS (voz británica del agente) | ~$0.32 |
 | **Total** | **~$0.51/hora** (~$1/día, ~$15-30/mes según uso) |
+
+A esto se suma un coste pequeño y aparte cada vez que eliges una categoría
+de tema (no por cada turno de conversación): la búsqueda web de Claude
+cuesta $10 por cada 1.000 búsquedas (~$0.01 cada vez, más un puñado de
+tokens de Sonnet) — con unos €0.03-0.06 por categoría elegida, calcula
+unos céntimos al día como mucho si cambias de tema un par de veces.
 
 Todos los servicios son pago por uso puro, sin suscripción — pagas
 literalmente por lo que hables. Estimado orientativo: revisa precios

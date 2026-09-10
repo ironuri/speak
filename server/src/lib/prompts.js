@@ -1,12 +1,12 @@
 import { getTopic } from "./topics.js";
 
 const LEVEL_GUIDANCE = {
-  beginner:
-    "The user is a beginner (roughly CEFR A2). Use short, simple sentences and common everyday vocabulary. Speak a little slower in tone (short sentences, no complex clauses).",
-  intermediate:
-    "The user is intermediate (roughly CEFR B1-B2). Use natural everyday vocabulary and normal sentence length. You can introduce some idioms if you briefly clarify them.",
-  advanced:
-    "The user is advanced (roughly CEFR C1). Speak naturally, at native pace, with idioms, phrasal verbs and varied sentence structure, like a native speaker would with a fluent friend.",
+  A1: "The user is CEFR A1. Use very short, simple sentences, the most common everyday words, and present tense as much as possible. Speak clearly and a bit slower in tone.",
+  A2: "The user is CEFR A2. Use short, simple sentences and common everyday vocabulary. Mostly simple tenses, avoid complex clauses.",
+  B1: "The user is CEFR B1. Use natural everyday vocabulary and normal sentence length. Introduce the occasional idiom if you briefly clarify it.",
+  B2: "The user is CEFR B2. Speak naturally at a normal pace, with everyday idioms and phrasal verbs — treat them like a fairly fluent friend, but keep vocabulary accessible.",
+  C1: "The user is CEFR C1. Speak naturally, at native pace, with idioms, phrasal verbs and varied sentence structure, like a native speaker would with a fluent friend.",
+  C2: "The user is CEFR C2, essentially native-level. Speak exactly as you would with a native English speaker — full speed, nuance, humor, cultural references, no simplification at all.",
 };
 
 const OPINION_GUIDANCE = [
@@ -28,7 +28,16 @@ function pickRandom(list, n) {
   return picked;
 }
 
-function buildTopicText({ topicId, topic }) {
+function buildTopicText({ topicId, topic, topicBriefing }) {
+  if (topicBriefing?.briefing) {
+    return (
+      `Today's topic is a real, current story: "${topicBriefing.title}". Here is a factual ` +
+      "briefing to ground the discussion — use it to have an informed, specific, genuine opinion " +
+      "about it, not just generic small talk:\n" +
+      `${topicBriefing.briefing}\n` +
+      "Bring this up naturally early in the conversation, and steer back to it if things drift too far."
+    );
+  }
   const curated = getTopic(topicId);
   if (curated) {
     const starters = pickRandom(curated.starters, 2);
@@ -45,9 +54,9 @@ function buildTopicText({ topicId, topic }) {
   return "There's no fixed topic — pick something natural to ask about, and follow whatever the user brings up.";
 }
 
-export function buildSystemPrompt({ level = "intermediate", topicId, topic = "", correctionsEnabled = true }) {
-  const levelText = LEVEL_GUIDANCE[level] || LEVEL_GUIDANCE.intermediate;
-  const topicText = buildTopicText({ topicId, topic });
+export function buildSystemPrompt({ level = "B2", topicId, topic = "", topicBriefing, correctionsEnabled = true }) {
+  const levelText = LEVEL_GUIDANCE[level] || LEVEL_GUIDANCE.B2;
+  const topicText = buildTopicText({ topicId, topic, topicBriefing });
   const correctionsText = correctionsEnabled
     ? "If the user makes a clear grammar or vocabulary mistake, weave in a brief, friendly correction (e.g. \"quick note — we'd usually say '...' instead of '...'\") and then keep the conversation going. Don't correct minor/natural things, and never correct more than once per reply."
     : "Do not correct mistakes at all right now — just have a natural conversation. Focus purely on fluency, not accuracy.";

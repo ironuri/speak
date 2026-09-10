@@ -5,6 +5,7 @@ import cors from "cors";
 import transcribeRouter from "./routes/transcribe.js";
 import chatRouter from "./routes/chat.js";
 import speakRouter from "./routes/speak.js";
+import topicSuggestionsRouter from "./routes/topicSuggestions.js";
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/transcribe", transcribeRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/speak", speakRouter);
+app.use("/api/topic-suggestions", topicSuggestionsRouter);
 
 app.use((err, req, res, next) => {
   console.error("[unhandled]", err);
