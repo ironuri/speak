@@ -54,14 +54,21 @@
 
       <div class="field">
         <label for="topic">Tema (opcional)</label>
-        <input type="text" id="topic" placeholder="p. ej. reuniones de trabajo, viajes..." />
+        <input type="text" id="topic" placeholder="o escribe un tema personalizado..." />
         <div class="chips">
-          <button type="button" class="chip" data-topic="daily life and routines">Vida diaria</button>
-          <button type="button" class="chip" data-topic="work and business meetings">Trabajo</button>
-          <button type="button" class="chip" data-topic="travel and vacations">Viajes</button>
-          <button type="button" class="chip" data-topic="news and current events">Actualidad</button>
-          <button type="button" class="chip" data-topic="">Sin tema fijo</button>
+          <button type="button" class="chip" data-id="">Sin tema fijo</button>
+          <button type="button" class="chip" data-id="sports">Deportes</button>
+          <button type="button" class="chip" data-id="politics">Política</button>
+          <button type="button" class="chip" data-id="finance">Finanzas</button>
+          <button type="button" class="chip" data-id="culture">Cultura</button>
+          <button type="button" class="chip" data-id="technology">Tecnología</button>
+          <button type="button" class="chip" data-id="environment">Medio ambiente</button>
+          <button type="button" class="chip" data-id="travel">Viajes</button>
+          <button type="button" class="chip" data-id="work">Trabajo</button>
         </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+          El agente tiene sus propias opiniones sobre el tema y puede no estar de acuerdo contigo — no solo te dará la razón.
+        </p>
       </div>
 
       <div class="field switch-row">

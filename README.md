@@ -13,7 +13,7 @@ iPhone (Safari / PWA)                 Tu servidor                Proveedores
 ┌─────────────────────┐   audio   ┌───────────────┐   texto   ┌─────────────┐
 │ graba tu voz (mic)   │ ───────▶ │ /api/transcribe│ ───────▶ │ OpenAI Whisper│
 │ reproduce la respuesta│         │ /api/chat       │ ───────▶ │ Claude (Anthropic)│
-│ en el altavoz del coche│        │ /api/speak      │ ───────▶ │ OpenAI TTS    │
+│ en el altavoz del coche│        │ /api/speak      │ ───────▶ │ ElevenLabs TTS│
 └─────────────────────┘  ◀─────── └───────────────┘  ◀─────── └─────────────┘
 ```
 
@@ -34,8 +34,18 @@ El servidor (`/server`) es una API Node/Express muy pequeña. Necesitas:
 - Una cuenta en [console.anthropic.com](https://console.anthropic.com) →
   `ANTHROPIC_API_KEY`
 - Una cuenta en [platform.openai.com](https://platform.openai.com) →
-  `OPENAI_API_KEY` (se usa solo para transcribir tu voz y generar la voz de
-  la respuesta; Claude no hace ni transcripción ni síntesis de audio)
+  `OPENAI_API_KEY` (se usa solo para transcribir tu voz; Whisper es el mejor
+  precio/calidad para eso y el acento no importa aquí, es tu propia voz)
+- Una cuenta en [elevenlabs.io](https://elevenlabs.io) → `ELEVENLABS_API_KEY`
+  (se usa para la voz del agente — OpenAI TTS no permite elegir acento, así
+  que para tener un acento británico real hace falta ElevenLabs)
+
+**Elegir la voz británica:** en elevenlabs.io ve a **Voice Library**, filtra
+por acento **British**, escucha algunas y quédate con la que más te guste.
+Copia su **Voice ID** (lo ves en los detalles de la voz) en
+`ELEVENLABS_VOICE_ID`. Los IDs son propios de cada cuenta y la librería
+cambia con el tiempo, así que confirma siempre ahí en lugar de reutilizar un
+ID de otra fuente.
 
 ```bash
 cd server
@@ -78,16 +88,47 @@ llamada.
 
 ## Ajustes de la conversación
 
-Desde el mismo panel ⚙️: nivel (principiante/intermedio/avanzado), tema
-opcional, y si quieres que te corrija errores de gramática/vocabulario
-sobre la marcha o no.
+Desde el mismo panel ⚙️: nivel (principiante/intermedio/avanzado), tema, y
+si quieres que te corrija errores de gramática/vocabulario sobre la marcha
+o no.
+
+**Temas.** Hay 8 temas ya preparados (Deportes, Política, Finanzas,
+Cultura, Tecnología, Medio ambiente, Viajes, Trabajo), inspirados en el
+formato "agree or disagree" que usan academias y editoriales de inglés
+(British Council LearnEnglish, exámenes de Cambridge, libros de texto tipo
+Speakout/English File) para practicar conversación en B1-B2: en vez de
+preguntas abiertas neutras, cada tema tiene una serie de afirmaciones
+debatibles ("los deportistas profesionales cobran demasiado", "el trabajo
+en remoto perjudica a la economía a largo plazo"...) que el agente usa para
+arrancar o reconducir la charla. También puedes escribir un tema libre en
+el campo de texto.
+
+**El agente opina de verdad.** No está diseñado para darte siempre la
+razón: toma una postura clara al principio de la conversación y la
+mantiene, te rebate cuando no está de acuerdo, matiza cuando sí lo está, y
+te pregunta por qué opinas lo que opinas — es un intercambio de opiniones,
+no una validación constante. Esto está definido en
+`server/src/lib/prompts.js` (bloque `OPINION_GUIDANCE`) y el banco de temas
+en `server/src/lib/topics.js`, así que puedes editar o añadir temas propios
+ahí directamente.
 
 ## Coste aproximado
 
-Con uso diario de ~2h: Whisper (transcripción) y TTS de OpenAI son los que
-más pesan por volumen de audio; Claude Haiku (el modelo por defecto) es
-barato para turnos de texto cortos. Estimado orientativo, revisa precios
-actuales en cada proveedor antes de confiar en la cifra.
+Con uso diario de ~2h (~100 turnos/hora), con la configuración por defecto
+(Claude Haiku 4.5 + Whisper + ElevenLabs Flash):
+
+| Servicio | Coste/hora aprox. |
+|---|---|
+| Claude (conversación) | ~$0.11 |
+| Whisper (transcribir tu voz) | ~$0.08 |
+| ElevenLabs (voz británica del agente) | ~$1.00 |
+| **Total** | **~$1.20/hora** (~$2.40/día, ~$35-70/mes según uso) |
+
+ElevenLabs es más caro que la voz genérica de OpenAI (es lo que hace falta
+para tener un acento británico real, que OpenAI no ofrece) — es, con
+diferencia, el componente que más pesa en la factura. Estimado orientativo:
+revisa precios actuales en cada proveedor antes de confiar en la cifra, y
+ten en cuenta que escala con cuánto habléis tú y el agente en cada turno.
 
 ## Roadmap hacia CarPlay nativo (fase 2)
 

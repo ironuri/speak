@@ -248,6 +248,12 @@ main {
   cursor: pointer;
 }
 
+.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
 .switch-row {
   display: flex;
   align-items: center;

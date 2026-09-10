@@ -24,6 +24,7 @@ const fields = {
 };
 
 let settings = loadSettings();
+let selectedTopicId = settings.topicId || null;
 applySettingsToForm();
 
 let history = [];
@@ -45,6 +46,7 @@ function loadSettings() {
     appSecret: "",
     level: "intermediate",
     topic: "",
+    topicId: null,
     correctionsEnabled: true,
   };
 }
@@ -55,6 +57,7 @@ function saveSettings() {
     appSecret: fields.appSecret.value,
     level: fields.level.value,
     topic: fields.topic.value.trim(),
+    topicId: selectedTopicId,
     correctionsEnabled: fields.corrections.checked,
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -77,11 +80,30 @@ saveSettingsBtn.addEventListener("click", () => {
   settingsOverlay.hidden = true;
 });
 
-document.querySelectorAll(".chip").forEach((chip) => {
+const chips = Array.from(document.querySelectorAll(".chip"));
+
+function refreshChipHighlight() {
+  chips.forEach((chip) => {
+    const id = chip.dataset.id || null;
+    chip.classList.toggle("active", id === selectedTopicId);
+  });
+}
+
+chips.forEach((chip) => {
   chip.addEventListener("click", () => {
-    fields.topic.value = chip.dataset.topic || "";
+    const id = chip.dataset.id || "";
+    selectedTopicId = id || null;
+    fields.topic.value = id ? chip.textContent : "";
+    refreshChipHighlight();
   });
 });
+
+fields.topic.addEventListener("input", () => {
+  selectedTopicId = null;
+  refreshChipHighlight();
+});
+
+refreshChipHighlight();
 
 function setUiState(state, message) {
   talkBtn.classList.remove("listening", "thinking", "speaking");
@@ -140,6 +162,7 @@ async function chat(nextHistory) {
     body: JSON.stringify({
       history: nextHistory,
       level: settings.level,
+      topicId: settings.topicId,
       topic: settings.topic,
       correctionsEnabled: settings.correctionsEnabled,
     }),

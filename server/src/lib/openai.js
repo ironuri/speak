@@ -31,31 +31,3 @@ export async function transcribeAudio(buffer, mimeType) {
   const data = await response.json();
   return (data.text || "").trim();
 }
-
-export async function synthesizeSpeech(text) {
-  const apiKey = requireApiKey();
-  const model = process.env.OPENAI_TTS_MODEL || "tts-1";
-  const voice = process.env.OPENAI_TTS_VOICE || "alloy";
-
-  const response = await fetch(`${OPENAI_API_BASE}/audio/speech`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      voice,
-      input: text,
-      response_format: "mp3",
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`OpenAI TTS error (${response.status}): ${errText}`);
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
-}

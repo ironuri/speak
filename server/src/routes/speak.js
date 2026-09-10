@@ -1,5 +1,5 @@
 import { Router, json } from "express";
-import { synthesizeSpeech } from "../lib/openai.js";
+import { synthesizeSpeech } from "../lib/elevenlabs.js";
 
 const router = Router();
 
