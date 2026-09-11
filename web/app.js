@@ -33,19 +33,28 @@ applySettingsToForm();
 // One-time setup via a private link (never commit real values to this file —
 // this repo/site is public). Open once on the phone:
 //   https://.../web/#server=<url>&secret=<secret>
-// It saves both to localStorage, then strips them from the visible URL/history.
-function applyMagicLink() {
-  if (!location.hash) return;
-  const params = new URLSearchParams(location.hash.slice(1));
+// It saves both to localStorage. Also reachable from inside the app itself
+// (Settings -> "Pegar enlace de configuración") for standalone home-screen
+// installs, since iOS doesn't always share localStorage between a Safari tab
+// and the home-screen app it spawned.
+function applySetupHash(hashString) {
+  const params = new URLSearchParams(hashString);
   const server = params.get("server");
   const secret = params.get("secret");
-  if (!server && !secret) return;
+  if (!server && !secret) return false;
 
   if (server) settings.serverUrl = server.replace(/\/+$/, "");
   if (secret) settings.appSecret = secret;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  applySettingsToForm();
+  return true;
+}
 
-  window.history.replaceState(null, "", location.pathname + location.search);
+function applyMagicLink() {
+  if (!location.hash) return;
+  if (applySetupHash(location.hash.slice(1))) {
+    window.history.replaceState(null, "", location.pathname + location.search);
+  }
 }
 
 let history = [];
@@ -99,6 +108,19 @@ openSettingsBtn.addEventListener("click", () => {
 saveSettingsBtn.addEventListener("click", () => {
   saveSettings();
   settingsOverlay.hidden = true;
+});
+
+const setupLinkInput = document.getElementById("setupLink");
+document.getElementById("applySetupLink").addEventListener("click", () => {
+  const val = setupLinkInput.value.trim();
+  if (!val) return;
+  const hashIndex = val.indexOf("#");
+  const hash = hashIndex >= 0 ? val.slice(hashIndex + 1) : val;
+  if (applySetupHash(hash)) {
+    setupLinkInput.value = "";
+  } else {
+    alert("No se ha encontrado ninguna URL o clave válida en ese texto.");
+  }
 });
 
 const chips = Array.from(document.querySelectorAll(".chip"));

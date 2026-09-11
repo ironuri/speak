@@ -34,6 +34,15 @@
       <h2>Ajustes</h2>
 
       <div class="field">
+        <label for="setupLink">Pegar enlace de configuración</label>
+        <input type="text" id="setupLink" placeholder="https://.../#server=...&secret=..." />
+        <button type="button" class="primary-btn" id="applySetupLink" style="margin-top:8px">Aplicar enlace</button>
+        <p style="font-size:12px;color:var(--muted);margin:6px 0 0">
+          Útil si esta app (añadida a la pantalla de inicio) no recogió el enlace abierto en Safari — pega aquí ese mismo enlace y aplícalo directamente.
+        </p>
+      </div>
+
+      <div class="field">
         <label for="serverUrl">URL del servidor</label>
         <input type="text" id="serverUrl" placeholder="https://tu-servidor.example.com" />
       </div>
