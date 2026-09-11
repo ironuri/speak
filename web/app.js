@@ -1,6 +1,6 @@
 const SETTINGS_KEY = "speak.settings";
 const MAX_HISTORY_MESSAGES = 20; // ~10 turns, keeps latency/cost bounded
-const SILENCE_MS = 900;
+const SILENCE_MS = 1600;
 const MIN_RECORD_MS = 400;
 const MAX_RECORD_MS = 15000;
 const SPEAK_RMS_THRESHOLD = 0.02;
