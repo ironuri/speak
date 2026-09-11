@@ -1,4 +1,4 @@
-const CACHE_NAME = "speak-shell-v1";
+const CACHE_NAME = "speak-shell-v2";
 const SHELL_FILES = ["./index.html", "./style.css", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -16,13 +16,22 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Only cache the static app shell; every /api/* call must always hit the network.
+// Network-first for the app shell, so updates show up immediately whenever
+// there's a connection — this app can't work offline anyway (every turn
+// needs the network for transcription/chat/voice), so the cache only exists
+// as a fallback for a flaky moment, not as an offline mode.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.pathname.startsWith("/api/")) return;
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
